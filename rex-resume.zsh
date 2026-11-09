@@ -30,15 +30,20 @@ add-zsh-hook precmd _rex_resume_forget
   { read -r session; read -r transcript; read -r dir; read -r shell; read -r started } < <(
     jq -r '.session_id, .transcript_path, .dir, .shell_pid, .shell_started' $_rex_resume_file)
 
+  # A record without a conversation ID or launching shell can't be resumed.
+  if [[ ! $session =~ '^[[:xdigit:]-]+$' || $shell != <-> ]]; then
+    rm -f $_rex_resume_file
+    return 0
+  fi
   # The shell that started Claude is still running, so Rex didn't restore this pane.
-  [[ ${$(ps -o lstart= -p $shell)//[[:space:]]/} == $started ]] && return 0
+  [[ "${$(ps -o lstart= -p $shell)//[[:space:]]/}" == "$started" ]] && return 0
   # Claude saves nothing before the first message, and the folder may be gone.
   if [[ ! -f $transcript || ! -d $dir ]]; then
     rm -f $_rex_resume_file
     return 0
   fi
 
-  typeset -g _rex_resume_command="cd ${(q)dir} && claude --resume $session"
+  typeset -g _rex_resume_command="cd ${(q)dir} && claude --resume ${(q)session}"
   zle -N _rex_resume_run
   add-zle-hook-widget line-init _rex_resume_run
 }
