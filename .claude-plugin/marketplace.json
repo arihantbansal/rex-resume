@@ -1,0 +1,24 @@
+{
+  "name": "rex-resume",
+  "owner": {
+    "name": "Arihant Bansal",
+    "url": "https://github.com/arihantbansal"
+  },
+  "plugins": [
+    {
+      "name": "rex-resume",
+      "source": "./",
+      "description": "Reopens your Claude Code conversations in Rex panes after a restart",
+      "category": "productivity",
+      "tags": [
+        "rex",
+        "terminal",
+        "sessions",
+        "resume"
+      ]
+    }
+  ],
+  "metadata": {
+    "description": "rex-resume, a Claude Code plugin that reopens conversations in Rex panes after a restart"
+  }
+}

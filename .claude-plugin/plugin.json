@@ -1,0 +1,19 @@
+{
+  "name": "rex-resume",
+  "description": "Reopens your Claude Code conversations in Rex panes after a restart",
+  "author": {
+    "name": "Arihant Bansal",
+    "url": "https://github.com/arihantbansal"
+  },
+  "homepage": "https://github.com/arihantbansal/rex-resume",
+  "repository": "https://github.com/arihantbansal/rex-resume",
+  "license": "MIT",
+  "keywords": [
+    "rex",
+    "terminal",
+    "multiplexer",
+    "sessions",
+    "resume",
+    "claude-code"
+  ]
+}
