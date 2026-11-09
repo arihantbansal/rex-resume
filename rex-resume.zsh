@@ -6,9 +6,12 @@
 typeset -g _rex_resume_file=${XDG_STATE_HOME:-$HOME/.local/state}/rex-resume/${REX_BLOCK#block:}.json
 
 # You quit Claude and this shell's prompt came back, so forget the conversation.
+# Ctrl+Z also brings the prompt back, but a suspended Claude still exists.
 _rex_resume_forget() {
-  [[ -f $_rex_resume_file && $(jq -r .shell_pid $_rex_resume_file) == $$ ]] &&
-    rm -f $_rex_resume_file
+  [[ -f $_rex_resume_file ]] || return 0
+  local shell claude
+  { read -r shell; read -r claude } < <(jq -r '.shell_pid, .claude_pid' $_rex_resume_file)
+  [[ $shell == $$ ]] && ! kill -0 $claude 2>/dev/null && rm -f $_rex_resume_file
 }
 
 # Run the resume command at the first prompt, as if you had typed it.

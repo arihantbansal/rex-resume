@@ -18,6 +18,7 @@ mkdir -p "$dir" || exit 0
 
 # Subagents carry an agent_id and belong to the conversation that started them.
 jq -c \
+  --argjson claude "$CLAUDE_PID" \
   --argjson shell "$shell" \
   --arg started "$(ps -o lstart= -p "$shell")" \
   --arg dir "${CLAUDE_PROJECT_DIR:-}" \
@@ -25,6 +26,7 @@ jq -c \
     session_id,
     transcript_path,
     dir: (if $dir == "" then .cwd else $dir end),
+    claude_pid: $claude,
     shell_pid: $shell,
     shell_started: ($started | gsub("\\s"; ""))
   }' >"$file.$$" && [ -s "$file.$$" ] && mv "$file.$$" "$file"
