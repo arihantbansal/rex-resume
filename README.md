@@ -1,6 +1,6 @@
 # rex-resume
 
-[![Claude Code 2.1.275+](https://img.shields.io/badge/Claude%20Code-2.1.275%2B-d97757)](https://code.claude.com)
+[![Claude Code 2.1.292+](https://img.shields.io/badge/Claude%20Code-2.1.292%2B-d97757)](https://code.claude.com)
 [![License: MIT](https://img.shields.io/github/license/arihantbansal/rex-resume)](LICENSE)
 
 Restart your computer and your Claude Code conversations come back in the same
@@ -10,11 +10,12 @@ Rex restores your sessions, tabs, and panes after a restart, but not the
 programs that were running in them. rex-resume remembers the Claude Code
 conversation in each pane. When Rex restores the pane, it reopens that
 conversation, ready for your next message. There's nothing to run after a
-restart.
+restart. It keeps no backup of its own: the conversations come from the history
+Claude Code already saves.
 
 ## Install
 
-You need Rex, Claude Code 2.1.275 or later, zsh, and jq. macOS 15 and later
+You need Rex, Claude Code 2.1.292 or later, zsh, and jq. macOS 15 and later
 include jq; on older systems, install it with your package manager.
 
 Install the plugin, then load its shell integration from `~/.zshrc`:
@@ -25,9 +26,11 @@ echo '[[ -r ~/.claude/plugins/marketplaces/rex-resume/rex-resume.zsh ]] && sourc
 ```
 
 Open a new Rex pane, start `claude`, and send a message. A file named after the
-pane appears in `~/.local/state/rex-resume/`. To see a resume without
-rebooting, run Rex's **Restart Server…** action. This ends every program
-running in Rex, the same as a restart would.
+pane appears in `~/.local/state/rex-resume/`.
+
+To see a resume without rebooting, run Rex's **Restart Server…** action. It ends
+every program running in Rex, the same as a restart would. Quitting the Rex app
+isn't a test: the server keeps your panes running while the app is closed.
 
 ## How it works
 
@@ -37,7 +40,7 @@ zsh. Together they handle three moments:
 | When | What happens |
 | --- | --- |
 | You start Claude in a Rex pane | The hook saves the conversation ID, its folder, and the shell that started Claude to `~/.local/state/rex-resume/<pane>.json`. |
-| You quit Claude | Your prompt returns in the same shell, so the file is deleted and the pane won't resume. |
+| You quit Claude | Your prompt returns and Claude is gone, so the file is deleted and the pane won't resume. Suspending Claude with Ctrl+Z keeps the file. |
 | Rex restores the pane | The pane's new shell finds a file whose shell no longer exists. It runs `cd <folder> && claude --resume <id>` at its first prompt, as if you had typed it. |
 
 Starting a new conversation with `/clear`, or switching with `/resume`, updates
@@ -71,12 +74,9 @@ rex-resume ignores:
 
 ## Limitations
 
+- Only Claude Code and zsh are supported.
 - Claude resumes with your default settings. Flags from the original launch,
   such as `--model`, aren't repeated.
-- Only zsh is supported.
-- Codex isn't supported. Codex 0.167 runs hooks in a background process shared
-  by every Codex window. The hook sees that process's environment instead of
-  the pane it runs for, so it can't tell which pane a session belongs to.
 
 ## Update
 
@@ -89,7 +89,16 @@ claude plugin marketplace update rex-resume
 claude plugin update rex-resume
 ```
 
-## Uninstall
+An update applies to shells and Claude sessions you start afterward.
+
+## Turn off or uninstall
+
+`claude plugin disable rex-resume` stops recording new conversations. Panes
+recorded before that still reopen after the next restart, because the shell
+integration loads separately. To stop those too, delete
+`~/.local/state/rex-resume`.
+
+To remove rex-resume completely:
 
 ```sh
 claude plugin uninstall rex-resume
@@ -109,13 +118,18 @@ claude --plugin-dir .
 
 `--plugin-dir` loads the hook from your clone for one session. Point the
 `source` line in `~/.zshrc` at your clone's `rex-resume.zsh` to test shell
-changes. Before opening a pull request, run:
+changes. Before opening a pull request, run these from a terminal:
 
 ```sh
+./test.zsh
 shellcheck hooks/session-start.sh
 zsh -n rex-resume.zsh
 claude plugin validate .
 ```
+
+`test.zsh` checks recording, forgetting, Ctrl+Z, and restore detection. It
+can't drive a live prompt, so also start Claude in a Rex pane, run **Restart
+Server…**, and confirm the conversation reopens.
 
 Issues and pull requests are welcome. Support for bash or fish is the most
 useful next step.
